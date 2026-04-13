@@ -4,6 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --gres=gpu:a100:1
+#SBATCH -C intel21
 #SBATCH --mem=64G
 #SBATCH --time=02:00:00
 #SBATCH --array=1-116%10          # 116 jobs, max 10 running at once
