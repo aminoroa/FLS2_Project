@@ -67,7 +67,7 @@ def build_af3_json(name: str, fls2_seq: str, flg22_seq: str, bak1_seq: str) -> d
             {"protein": {"id": "B", "sequence": flg22_seq}},
             {"protein": {"id": "C", "sequence": bak1_seq}},
         ],
-        "modelseeds": [1, 2, 3],
+        "seeds": [1, 2, 3],
         "dialect": "alphafold3",
         "version": 1,
     }
