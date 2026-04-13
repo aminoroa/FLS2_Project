@@ -1,0 +1,69 @@
+#!/bin/bash --login
+#SBATCH --job-name=af3_li_recreation
+#SBATCH --gres=gpu:1
+#SBATCH --partition=general-short
+#SBATCH -C intel21
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH --time=4:00:00
+#SBATCH --array=1-219%8
+#SBATCH --output=logs/%x_%A_%a.out
+#SBATCH --error=logs/%x_%A_%a.err
+
+set -euo pipefail
+
+module purge
+module load AlphaFold3/3.0.1-foss-2023a-CUDA-12.6.0-patch20250310
+
+MODEL_DIR=/mnt/home/schul787/AlphaFold3/weights
+BASE_DIR=/mnt/scratch/schul787/li_recreation
+MANIFEST=$BASE_DIR/af3_input_manifest.txt
+FINAL_OUTDIR=$BASE_DIR/outputs
+TMP_BASE=${SLURM_TMPDIR:-/tmp}/${USER}/af3_${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID}
+
+mkdir -p "$BASE_DIR/logs"
+mkdir -p "$FINAL_OUTDIR"
+mkdir -p "$TMP_BASE/input"
+mkdir -p "$TMP_BASE/output"
+
+JSON_PATH=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$MANIFEST")
+
+if [[ -z "${JSON_PATH:-}" ]]; then
+    echo "No JSON path found for array index $SLURM_ARRAY_TASK_ID"
+    exit 1
+fi
+
+JSON_BASENAME=$(basename "$JSON_PATH")
+JOB_STEM="${JSON_BASENAME%.json}"
+
+echo "Array task: $SLURM_ARRAY_TASK_ID"
+echo "Input JSON: $JSON_PATH"
+echo "Job stem:   $JOB_STEM"
+
+# Put only this one JSON in the task-local input directory
+ln -s "$JSON_PATH" "$TMP_BASE/input/$JSON_BASENAME"
+
+# Skip if already completed
+if [[ -d "$FINAL_OUTDIR/$JOB_STEM" ]]; then
+    echo "Output directory already exists: $FINAL_OUTDIR/$JOB_STEM"
+    echo "Skipping."
+    exit 0
+fi
+
+run_alphafold.py \
+  --input_dir "$TMP_BASE/input" \
+  --output_dir "$TMP_BASE/output" \
+  --db_dir "$AF3_DB_DIR" \
+  --model_dir "$MODEL_DIR"
+
+# Move the task result back to permanent storage
+# AF3 usually writes a subdirectory named after the JSON/job name
+if [[ -d "$TMP_BASE/output/$JOB_STEM" ]]; then
+    mv "$TMP_BASE/output/$JOB_STEM" "$FINAL_OUTDIR/"
+else
+    echo "Expected output directory $TMP_BASE/output/$JOB_STEM not found."
+    echo "Moving entire task output directory instead."
+    mv "$TMP_BASE/output" "$FINAL_OUTDIR/${JOB_STEM}_output"
+fi
+
+echo "Done: $JOB_STEM"
