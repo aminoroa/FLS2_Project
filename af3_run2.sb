@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH --job-name=AF3_FLS2
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --gres=gpu:a100:1
+#SBATCH -C intel21
+#SBATCH --mem=64G
+#SBATCH --time=02:00:00
+#SBATCH --array=1-116%10
+#SBATCH --output=/mnt/home/aminoroa/FLS2_Project/logs/%A_%a.out
+#SBATCH --error=/mnt/home/aminoroa/FLS2_Project/logs/%A_%a.err
+
+module purge
+module load AlphaFold3/3.0.1-foss-2023a-CUDA-12.4.0-patch20250310
+
+INPUT_DIR=/mnt/home/aminoroa/FLS2_Project/Input_data/AF3_Input
+OUTPUT_DIR=/mnt/home/aminoroa/FLS2_Project/AF3_Output
+MODEL_DIR=/mnt/home/aminoroa/AF3_model_weights
+
+json_files=(${INPUT_DIR}/*.json)
+JSON_FILE=${json_files[$((SLURM_ARRAY_TASK_ID-1))]}
+
+if [[ ! -f "$JSON_FILE" ]]; then
+    echo "No JSON file found for task ID $SLURM_ARRAY_TASK_ID"
+    exit 1
+fi
+
+BASENAME=$(basename "$JSON_FILE" .json)
+TASK_OUTPUT_DIR=${OUTPUT_DIR}/${BASENAME}
+mkdir -p "$TASK_OUTPUT_DIR"
+
+echo "Processing: $JSON_FILE"
+echo "Output: $TASK_OUTPUT_DIR"
+
+run_alphafold.py \
+  --json_path="$JSON_FILE" \
+  --model_dir="$MODEL_DIR" \
+  --db_dir="$AF3_DB_DIR" \
+  --output_dir="$TASK_OUTPUT_DIR"
