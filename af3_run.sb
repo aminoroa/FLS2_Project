@@ -1,0 +1,33 @@
+#!/bin/bash
+#SBATCH --job-name=AF3_FLS2
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --gres=gpu:a100:1
+#SBATCH --mem=64G
+#SBATCH --time=02:00:00
+#SBATCH --array=1-116%10          # 116 jobs, max 10 running at once
+#SBATCH --output=logs/%A_%a.out   # one log file per job
+#SBATCH --error=logs/%A_%a.err
+
+# Create logs directory
+mkdir -p /mnt/home/aminoroa/FLS2_Project/logs
+
+# Load module
+module purge
+module load AlphaFold3/3.0.1-foss-2023a-CUDA-12.4.0-patch20250310
+
+# Get the list of all JSON files and pick the one for this array task
+INPUT_DIR=/mnt/home/aminoroa/FLS2_Project/Input_data/AF3_Input
+OUTPUT_DIR=/mnt/home/aminoroa/FLS2_Project/AF3_Output
+
+# Pick the Nth json file corresponding to this array index
+JSON_FILE=$(ls ${INPUT_DIR}/*.json | sed -n "${SLURM_ARRAY_TASK_ID}p")
+
+echo "Processing: ${JSON_FILE}"
+
+# Run AlphaFold3 on the single JSON file
+run_alphafold.py \
+  --json_path=${JSON_FILE} \
+  --model_dir=/mnt/home/aminoroa \
+  --output_dir=${OUTPUT_DIR}
