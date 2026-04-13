@@ -29,5 +29,6 @@ echo "Processing: ${JSON_FILE}"
 # Run AlphaFold3 on the single JSON file
 run_alphafold.py \
   --json_path=${JSON_FILE} \
-  --model_dir=/mnt/home/aminoroa \
+  --model_dir=/mnt/home/aminoroa/AF3_model_weights \
+  --db_dir "$AF3_DB_DIR" \
   --output_dir=${OUTPUT_DIR}
