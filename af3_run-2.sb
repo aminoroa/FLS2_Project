@@ -1,0 +1,70 @@
+#!/bin/bash --login
+#SBATCH --job-name=af3_fls2
+#SBATCH --gres=gpu:1
+#SBATCH --partition=general-short
+#SBATCH -C intel21
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH --time=8:00:00
+#SBATCH --output=/mnt/home/aminoroa/logs/af3_%A_%a.out
+#SBATCH --error=/mnt/home/aminoroa/logs/af3_%A_%a.err
+
+# ================================================================
+# AlphaFold3 Batch Submission Script — FLS2 Project
+# ================================================================
+
+set -euo pipefail
+
+# --- User Paths ---
+INPUT_DIR=/mnt/home/aminoroa/FLS2_Project/Input_data/AF3_Input
+OUTPUT_DIR=/mnt/home/aminoroa/FLS2_Project/AF3_Output
+MODEL_DIR=/mnt/home/aminoroa/AF3_model_weights
+LOG_DIR=/mnt/home/aminoroa/FLS2_Project/logs
+
+# --- AlphaFold3 Settings ---
+export AF3_DB_DIR="/mnt/research/common-data/alphafold/database_3/"
+
+# ----------------------------------------------------------------
+# LAUNCHER MODE (Initial Submission)
+# ----------------------------------------------------------------
+if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
+    mkdir -p "${LOG_DIR}"
+    
+    # Count JSON files
+    mapfile -t JSON_FILES < <(ls "${INPUT_DIR}"/*.json 2>/dev/null | sort)
+    NUM_FILES=${#JSON_FILES[@]}
+    
+    # Calculate total tasks: Number of files * 3 runs each
+    TOTAL_TASKS=$(( NUM_FILES * 3 ))
+
+    echo "Found ${NUM_FILES} files. Submitting ${TOTAL_TASKS} tasks (3 runs per file)."
+    sbatch --array=1-${TOTAL_TASKS}%10 "$0"  # Adjust %10 to control how many run at once
+    exit 0
+fi
+
+# ----------------------------------------------------------------
+# WORKER MODE
+# ----------------------------------------------------------------
+
+# 1. Logic to map Task ID to File ID
+# Task 1,2,3 -> File 0 | Task 4,5,6 -> File 1 ...
+FILE_INDEX=$(( (SLURM_ARRAY_TASK_ID - 1) / 3 ))
+RUN_NUMBER=$(( (SLURM_ARRAY_TASK_ID - 1) % 3 + 1 ))
+
+mapfile -t JSON_FILES < <(ls "${INPUT_DIR}"/*.json | sort)
+JSON_FILE="${JSON_FILES[$FILE_INDEX]:-}"
+
+BASENAME=$(basename "${JSON_FILE}" .json)
+# Crucial: Change output dir so the 3 runs don't overwrite each other
+TASK_OUTPUT_DIR="${OUTPUT_DIR}/${BASENAME}/run_${RUN_NUMBER}"
+
+mkdir -p "${TASK_OUTPUT_DIR}"
+
+# 2. Run AlphaFold3
+# We add the --num_seeds flag to override the JSON if needed, 
+# or just rely on your JSON having [1] seed.
+${EBROOTALPHAFOLD3}/bin/run_alphafold.py \
+    --json_path="${JSON_FILE}" \
+    --model_dir="${MODEL_DIR}" \
+    --db_dir="${AF3_DB_DIR}" \
+    --output_dir="${TASK_OUTPUT_DIR}"
