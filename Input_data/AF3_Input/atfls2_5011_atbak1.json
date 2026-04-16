@@ -20,7 +20,7 @@
             }
         }
     ],
-    "seeds": [
+    "modelSeeds": [
         1,
         2,
         3
