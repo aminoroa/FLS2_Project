@@ -1,0 +1,26 @@
+#!/bin/bash --login
+#SBATCH --job-name=af3_atfls2
+#SBATCH --gres=gpu:1
+#SBATCH --partition=general
+#SBATCH -C intel21               
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH --time=4:00:00
+
+# Load the AlphaFold3 module
+module purge
+module load AlphaFold3/3.0.1-foss-2023a-CUDA-12.6.0-patch20250310
+
+# Use Scratch for faster I/O and to avoid quota issues
+WORKDIR="/mnt/scratch/aminoroa/FLS2_Project"
+mkdir -p $WORKDIR
+INPUT_JSON="/mnt/home/aminoroa/FLS2_Project/Input_data/AF3_Input/atfls2_17_atbak1.json"
+
+# Execute AlphaFold3
+# Added missing backslash and verified common MSU variable names
+run_alphafold.py \
+    --json_path=$INPUT_JSON \
+    --output_dir=$WORKDIR \
+    --model_dir=$ALPHAFOLD_MODEL_DIR \
+    --db_dir=$AF3_DB_DIR \
+    --num_seeds=3
