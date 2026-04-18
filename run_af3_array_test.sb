@@ -1,0 +1,49 @@
+#!/bin/bash --login
+#SBATCH --job-name=af3
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:a100:1
+#SBATCH -C "intel21"
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH --time=08:00:00
+
+# This line tells Slurm to run 116 tasks (0 through 115).
+# The %10 limits it to 10 running at once to avoid hogging all A100s.
+#SBATCH --array=0-115%10
+
+# Log files organized by Job ID and Array Index
+#SBATCH --output=/mnt/home/aminoroa/FLS2_Project/logs/af3_%A_%a.out
+#SBATCH --error=/mnt/home/aminoroa/FLS2_Project/logs/af3_%A_%a.err
+
+# 1. Setup Directories
+INPUT_DIR="/mnt/home/aminoroa/FLS2_Project/af3_input_test"
+OUTPUT_DIR="/mnt/home/aminoroa/FLS2_Project/af3_output_test"
+MODEL_DIR="/mnt/home/aminoroa/AF3_model_weights" # Path to directory containing the weights
+mkdir -p $OUTPUT_DIR
+mkdir -p /mnt/home/aminoroa/FLS2_Project/logs
+
+# 2. Load Module
+module purge
+module load AlphaFold3/3.0.1-foss-2023a-CUDA-12.6.0-patch20250310
+
+# 3. Get the specific file for THIS array task
+# We create an array of all .json files and pick the one corresponding to the task ID
+FILES=($INPUT_DIR/*.json)
+CURRENT_FILE=${FILES[$SLURM_ARRAY_TASK_ID]}
+
+# Extract just the filename (without path) for a cleaner output folder name
+FILENAME=$(basename -- "$CURRENT_FILE")
+JOB_OUTPUT_DIR="$OUTPUT_DIR/${FILENAME%.*}"
+mkdir -p $JOB_OUTPUT_DIR
+
+echo "Processing file: $CURRENT_FILE"
+echo "Task ID: $SLURM_ARRAY_TASK_ID"
+
+# 4. Run AlphaFold3
+# --num_seeds=3 performs the three independent runs you requested
+run_alphafold.py \
+    --json_path="$CURRENT_FILE" \
+    --output_dir="$JOB_OUTPUT_DIR" \
+    --model_dir="$MODEL_DIR" \
+    --db_dir="$AF3_DB_DIR" \
+    --num_seeds=3
