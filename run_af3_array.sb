@@ -1,11 +1,12 @@
 #!/bin/bash --login
 #SBATCH --job-name=af3
-#SBATCH --partition=gpu
+#SBATCH --partition=general-short
 #SBATCH --gres=gpu:a100:1
 #SBATCH -C "intel21"
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=64G
-#SBATCH --time=08:00:00
+#SBATCH --time=03:50:00
+#SBATCH --array=0-115%10
 
 # This line tells Slurm to run 116 tasks (0 through 115).
 # The %10 limits it to 10 running at once to avoid hogging all A100s.
@@ -45,5 +46,4 @@ run_alphafold.py \
     --json_path="$CURRENT_FILE" \
     --output_dir="$JOB_OUTPUT_DIR" \
     --model_dir="$MODEL_DIR" \
-    --db_dir="$AF3_DB_DIR" \
-    --num_seeds=3
+    --db_dir="$AF3_DB_DIR"

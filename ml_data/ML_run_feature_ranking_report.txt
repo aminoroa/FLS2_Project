@@ -1,0 +1,73 @@
+====================================================
+                FEATURE RANKING REPORT              
+====================================================
+
+1. ANOVA F-TEST (Univariate Importance)
+----------------------------------------
+Measures the ratio of variance between classes to variance within classes.
+Higher F-score = better separation.
+
+                  Feature   F-Score
+   ligand_coreceptor_iptm 28.253120
+         ligand_fls2_iptm 25.591352
+ligand_pae_min_coreceptor 23.439011
+      ligand_pae_min_fls2 21.251094
+                      ptm 19.265491
+                     iptm 11.625823
+
+
+2. TREE-BASED FEATURE IMPORTANCE (Random Forest)
+----------------------------------------
+How much each feature contributes to decreasing impurity across all trees.
+
+                  Feature  Importance
+      ligand_pae_min_fls2    0.245397
+   ligand_coreceptor_iptm    0.191208
+ligand_pae_min_coreceptor    0.173928
+         ligand_fls2_iptm    0.156099
+                     iptm    0.147264
+                      ptm    0.086105
+
+
+3. PERMUTATION IMPORTANCE
+----------------------------------------
+Measures model accuracy drop when a specific feature is randomly shuffled.
+
+                  Feature  Importance
+      ligand_pae_min_fls2    0.145652
+                     iptm    0.114130
+         ligand_fls2_iptm    0.098913
+   ligand_coreceptor_iptm    0.094565
+ligand_pae_min_coreceptor    0.055435
+                      ptm    0.022826
+
+
+4. RECURSIVE FEATURE ELIMINATION (RFE)
+----------------------------------------
+Iteratively drops the weakest feature. Rank 1 means most important.
+
+                  Feature  Rank
+      ligand_pae_min_fls2     1
+   ligand_coreceptor_iptm     2
+ligand_pae_min_coreceptor     3
+         ligand_fls2_iptm     4
+                     iptm     5
+                      ptm     6
+
+
+5. RFECV (RFE with 5-Fold Cross Validation)
+----------------------------------------
+Optimal number of features found: 6
+Cross-validation validated rank of features (Rank 1 = selected in optimal set):
+
+                  Feature  Rank
+                     iptm     1
+                      ptm     1
+         ligand_fls2_iptm     1
+   ligand_coreceptor_iptm     1
+      ligand_pae_min_fls2     1
+ligand_pae_min_coreceptor     1
+
+====================================================
+END OF REPORT
+====================================================
