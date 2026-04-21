@@ -1,0 +1,33 @@
+ROC AND THRESHOLD ANALYSIS (original)
+==================================================
+
+--- Score: iptm ---
+AUC: 0.9478
+Best Accuracy: 93.75%
+Optimal Threshold: If score is >= 0.9100, predict 'Perception'.
+
+--- Score: ptm ---
+AUC: 0.9225
+Best Accuracy: 89.58%
+Optimal Threshold: If score is >= 0.8900, predict 'Perception'.
+
+--- Score: ligand_fls2_iptm ---
+AUC: 0.9942
+Best Accuracy: 96.88%
+Optimal Threshold: If score is >= 0.8667, predict 'Perception'.
+
+--- Score: ligand_coreceptor_iptm ---
+AUC: 0.9860
+Best Accuracy: 94.79%
+Optimal Threshold: If score is >= 0.6267, predict 'Perception'.
+
+--- Score: ligand_pae_min_fls2 ---
+AUC: 0.9907
+Best Accuracy: 96.88%
+Optimal Threshold: If score is <= 2.9833, predict 'Perception'.
+
+--- Score: ligand_pae_min_coreceptor ---
+AUC: 0.9824
+Best Accuracy: 95.83%
+Optimal Threshold: If score is <= 2.6033, predict 'Perception'.
+
