@@ -4,7 +4,12 @@ FLS2.fasta, flg22.fasta, and coreceptor.fasta files contain sequences of FLS2s, 
 Input files related to FLS2-flg22-coreceptor complexes for AlphaFold3 calculations are provided in ~/AF3_inputs
 
 # 2. Connecting to MSU HPCC
-**Add explanations here**
+
+```
+ssh <usernanme>@hpcc.msu.edu
+<password>
+sbatch af3_run.sb
+```
 
 # 1. AlphaFold3 Output
 To get the AlphaFold3 predicted structure of complexes, a batch job script was submitted to HPCC
