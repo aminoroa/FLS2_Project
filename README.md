@@ -3,6 +3,13 @@ FLS2.fasta, flg22.fasta, and coreceptor.fasta files contain sequences of FLS2s, 
 
 Input files related to FLS2-flg22-coreceptor complexes for AlphaFold3 calculations are provided in ~/AF3_inputs
 
+**Two main datasets were used in this analysis.**
+
+"Li Dataset" - T. Li et al., Unlocking expanded flagellin perception through rational receptor engineering, Nature Plants 11, 1628-1641 (2025). https://doi.org/10.1038/s41477-025-02049-y
+This dataset provides pairs of FLS2 and flagellin sequences (97 from A. thaliana and 122 from other plant species) which are labeled as "Perceived" or "Not Perceived." In the study, the authors demonstrated that AF3 ipTM score could be used to classify the perception.
+"Colaianni Dataset" - N. Colaianni et al., A complex immune response to flagellin epitope variation in commensal communities, Cell Host & Microbe 29, 635-649 (2021). https://doi.org/10.1016/j.chom.2021.02.006
+This dataset provides 97 flagellin peptides which are labeled as "Canonical/Immunogenic," "Deviant," "Antagonistic," or "Evading." All samples are from A. thaliana.
+
 # 2. Connecting to MSU HPCC
 
 ```
